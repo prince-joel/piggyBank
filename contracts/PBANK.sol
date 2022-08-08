@@ -15,23 +15,22 @@ contract Pbank{
     }
     mapping(address => Users) public user;
 
-    function deposit() payable external {
+    function deposit(uint value) payable external {
         Users storage user1 = user[msg.sender];
-        // require( msg.sender == user1.owner, "not the owner");
+        require( value == msg.value && value >= 1 ether, "invalid deposit");
         user1.owner = msg.sender;
-        user1.userBalance = user1.userBalance + msg.value;
-        user1.hasWithdrawn = false;
-        emit Deposit(msg.sender, msg.value);
+        user1.userBalance = user1.userBalance + value;
+        // user1.hasWithdrawn = false;
+        emit Deposit(msg.sender, value);
         
     } 
 
     function Withdraw(uint _amount) external  {
         Users storage user1 = user[msg.sender];
         require(_amount == user1.userBalance, "invalid amount");
-        require(user1.hasWithdrawn != true, "cant withdraw again");
         require( msg.sender == user1.owner, "not the owner");
-        user1.userBalance = user1.userBalance - _amount;
         user1.hasWithdrawn = true;
+        user1.userBalance = user1.userBalance - _amount;
         payable(user1.owner).transfer(_amount);
         emit withdraw(user1.owner , _amount);
         selfdestruct(payable(user1.owner));
